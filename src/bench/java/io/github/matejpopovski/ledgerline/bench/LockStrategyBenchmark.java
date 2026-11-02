@@ -73,6 +73,7 @@ public final class LockStrategyBenchmark {
       Duration measure,
       int repeats,
       String synchronousCommit,
+      String walSyncMethod,
       long seed,
       Path out) {
 
@@ -94,6 +95,7 @@ public final class LockStrategyBenchmark {
           Duration.ofSeconds(Long.parseLong(given.getOrDefault("--seconds", "8"))),
           Integer.parseInt(given.getOrDefault("--repeats", "3")),
           given.getOrDefault("--synchronous-commit", "on"),
+          given.getOrDefault("--wal-sync-method", "default"),
           Long.parseLong(given.getOrDefault("--seed", "20261102")),
           Path.of(given.getOrDefault("--out", "results/lock-strategies.json")));
     }
@@ -134,13 +136,17 @@ public final class LockStrategyBenchmark {
   }
 
   private static EmbeddedPostgres start(Options options) throws IOException {
-    return EmbeddedPostgres.builder()
-        .setServerConfig("max_connections", "120")
-        .setServerConfig("fsync", "on")
-        .setServerConfig("full_page_writes", "on")
-        .setServerConfig("synchronous_commit", options.synchronousCommit())
-        .setServerConfig("shared_buffers", "256MB")
-        .start();
+    EmbeddedPostgres.Builder builder =
+        EmbeddedPostgres.builder()
+            .setServerConfig("max_connections", "120")
+            .setServerConfig("fsync", "on")
+            .setServerConfig("full_page_writes", "on")
+            .setServerConfig("synchronous_commit", options.synchronousCommit())
+            .setServerConfig("shared_buffers", "256MB");
+    if (!options.walSyncMethod().equals("default")) {
+      builder.setServerConfig("wal_sync_method", options.walSyncMethod());
+    }
+    return builder.start();
   }
 
   private static void prepareTemplate(EmbeddedPostgres postgres) throws SQLException {
@@ -405,6 +411,8 @@ public final class LockStrategyBenchmark {
         Integer.toString(o.repeats()),
         "--synchronous-commit",
         o.synchronousCommit(),
+        "--wal-sync-method",
+        o.walSyncMethod(),
         "--seed",
         Long.toString(o.seed()),
         "--out",

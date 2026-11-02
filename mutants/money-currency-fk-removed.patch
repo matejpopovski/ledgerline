@@ -1,0 +1,13 @@
+diff --git a/src/main/resources/db/migration/V1__ledger_schema.sql b/src/main/resources/db/migration/V1__ledger_schema.sql
+index 81777c5..0fb030b 100644
+--- a/src/main/resources/db/migration/V1__ledger_schema.sql
++++ b/src/main/resources/db/migration/V1__ledger_schema.sql
+@@ -45,7 +45,7 @@ CREATE TABLE postings (
+     amount_minor        bigint  NOT NULL CHECK (amount_minor BETWEEN 1 AND 9007199254740991),
+     balance_after_minor bigint  NOT NULL,
+     CONSTRAINT postings_entry_fk FOREIGN KEY (entry_id, currency) REFERENCES journal_entries (id, currency),
+-    CONSTRAINT postings_account_fk FOREIGN KEY (account_id, currency) REFERENCES accounts (id, currency),
++    CONSTRAINT postings_account_fk FOREIGN KEY (account_id) REFERENCES accounts (id),
+     CONSTRAINT postings_entry_account_key UNIQUE (entry_id, account_id)
+ );
+ 

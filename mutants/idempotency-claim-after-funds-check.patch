@@ -1,0 +1,26 @@
+diff --git a/src/main/java/io/github/matejpopovski/ledgerline/posting/PostingService.java b/src/main/java/io/github/matejpopovski/ledgerline/posting/PostingService.java
+index ecb8d8a..370fba1 100644
+--- a/src/main/java/io/github/matejpopovski/ledgerline/posting/PostingService.java
++++ b/src/main/java/io/github/matejpopovski/ledgerline/posting/PostingService.java
+@@ -83,16 +83,16 @@ public class PostingService {
+ 
+   private PostedEntry postOnce(EntryDraft draft, String fingerprint) {
+     UUID entryId = UUID.randomUUID();
+-    Optional<EntryClaim> claim = store.claimEntry(entryId, draft, fingerprint);
+-    if (claim.isEmpty()) {
+-      return replay(draft, fingerprint);
+-    }
+-
+     List<UUID> accountIds = draft.accountIdsInLockOrder();
+     Map<UUID, Account> accounts =
+         strategy.locksRows() ? store.lockAccounts(accountIds) : store.readAccounts(accountIds);
+ 
+     PostingPlan plan = PostingPlan.of(draft, accounts);
++    Optional<EntryClaim> claim = store.claimEntry(entryId, draft, fingerprint);
++    if (claim.isEmpty()) {
++      return replay(draft, fingerprint);
++    }
++
+     store.writeBalances(plan);
+     store.insertPostings(entryId, draft.currency(), plan);
+ 

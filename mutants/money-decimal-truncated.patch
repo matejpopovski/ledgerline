@@ -1,0 +1,13 @@
+diff --git a/src/main/resources/application.yaml b/src/main/resources/application.yaml
+index 6bbf30f..644dbb4 100644
+--- a/src/main/resources/application.yaml
++++ b/src/main/resources/application.yaml
+@@ -15,8 +15,6 @@ spring:
+         SET idle_in_transaction_session_timeout = '15s'
+   jackson:
+     deserialization:
+-      # Jackson would otherwise truncate 10.5 to 10 on a long field.
+-      accept-float-as-int: false
+       fail-on-unknown-properties: true
+     mapper:
+       allow-coercion-of-scalars: false

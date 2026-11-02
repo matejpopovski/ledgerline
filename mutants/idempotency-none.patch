@@ -1,0 +1,13 @@
+diff --git a/src/main/java/io/github/matejpopovski/ledgerline/store/LedgerStore.java b/src/main/java/io/github/matejpopovski/ledgerline/store/LedgerStore.java
+index a9a206a..6ddf865 100644
+--- a/src/main/java/io/github/matejpopovski/ledgerline/store/LedgerStore.java
++++ b/src/main/java/io/github/matejpopovski/ledgerline/store/LedgerStore.java
+@@ -133,7 +133,7 @@ public class LedgerStore {
+             RETURNING seq, posted_at
+             """)
+         .param("id", id)
+-        .param("key", draft.idempotencyKey())
++        .param("key", id.toString())
+         .param("fingerprint", fingerprint)
+         .param("currency", draft.currency())
+         .param("description", draft.description())

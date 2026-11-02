@@ -1,0 +1,15 @@
+diff --git a/src/main/resources/application.yaml b/src/main/resources/application.yaml
+index 6bbf30f..db0a07d 100644
+--- a/src/main/resources/application.yaml
++++ b/src/main/resources/application.yaml
+@@ -9,10 +9,6 @@ spring:
+       maximum-pool-size: 16
+       # Bounds on what one request can pin: a queue behind a hot row should end in a
+       # retry and then a 503, never in a pile of connections waiting forever.
+-      connection-init-sql: >-
+-        SET lock_timeout = '2s';
+-        SET statement_timeout = '10s';
+-        SET idle_in_transaction_session_timeout = '15s'
+   jackson:
+     deserialization:
+       # Jackson would otherwise truncate 10.5 to 10 on a long field.

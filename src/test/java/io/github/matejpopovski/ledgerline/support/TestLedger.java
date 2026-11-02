@@ -36,6 +36,7 @@ public final class TestLedger implements AutoCloseable {
   public static final RetryPolicy PATIENT_RETRIES =
       new RetryPolicy(200, Duration.ofMillis(1), Duration.ofMillis(50));
 
+  private final String jdbcUrl;
   private final HikariDataSource pool;
   private final AtomicInteger codes = new AtomicInteger();
 
@@ -49,9 +50,11 @@ public final class TestLedger implements AutoCloseable {
   public final AuditService audit;
   public final SimpleMeterRegistry meters = new SimpleMeterRegistry();
 
-  private TestLedger(ConcurrencyStrategy strategy, RetryPolicy retries, String connectionInitSql) {
+  private TestLedger(
+      String jdbcUrl, ConcurrencyStrategy strategy, RetryPolicy retries, String connectionInitSql) {
+    this.jdbcUrl = jdbcUrl;
     this.strategy = strategy;
-    this.pool = TestDatabase.pool(TestDatabase.freshDatabaseUrl(), 40, connectionInitSql);
+    this.pool = TestDatabase.pool(jdbcUrl, 40, connectionInitSql);
     this.jdbc = JdbcClient.create(pool);
     this.transactions = new JdbcTransactionManager(pool);
     this.store = new LedgerStore(jdbc, new JdbcTemplate(pool));
@@ -64,16 +67,21 @@ public final class TestLedger implements AutoCloseable {
   }
 
   public static TestLedger create(ConcurrencyStrategy strategy) {
-    return new TestLedger(strategy, PATIENT_RETRIES, null);
+    return new TestLedger(TestDatabase.freshDatabaseUrl(), strategy, PATIENT_RETRIES, null);
   }
 
   public static TestLedger create(ConcurrencyStrategy strategy, RetryPolicy retries) {
-    return new TestLedger(strategy, retries, null);
+    return new TestLedger(TestDatabase.freshDatabaseUrl(), strategy, retries, null);
   }
 
   public static TestLedger create(
       ConcurrencyStrategy strategy, RetryPolicy retries, String connectionInitSql) {
-    return new TestLedger(strategy, retries, connectionInitSql);
+    return new TestLedger(TestDatabase.freshDatabaseUrl(), strategy, retries, connectionInitSql);
+  }
+
+  /** A second service instance on this ledger's database, as during a rolling restart. */
+  public TestLedger secondInstance(ConcurrencyStrategy otherStrategy) {
+    return new TestLedger(jdbcUrl, otherStrategy, PATIENT_RETRIES, null);
   }
 
   public HikariDataSource dataSource() {

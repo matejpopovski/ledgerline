@@ -136,6 +136,30 @@ class ConcurrencyStrategyTest {
     }
   }
 
+  /** Instances on different strategies overlap during a rolling restart and share the rows. */
+  @Test
+  void mixedStrategiesDuringARollingChangeKeepTheBooks() {
+    try (TestLedger locking = TestLedger.create(ConcurrencyStrategy.ROW_LOCK);
+        TestLedger serializable = locking.secondInstance(ConcurrencyStrategy.SERIALIZABLE);
+        TestLedger snapshot = locking.secondInstance(ConcurrencyStrategy.REPEATABLE_READ)) {
+      Account hot = locking.fundedWallet("USD", 1_200);
+      Account other = locking.wallet("USD");
+      List<TestLedger> instances = List.of(locking, serializable, snapshot);
+
+      List<Outcome<PostedEntry>> outcomes =
+          Race.run(
+              RACERS * 2,
+              racer ->
+                  instances
+                      .get(racer % instances.size())
+                      .move(UUID.randomUUID().toString(), hot, other, 100));
+
+      assertThat(outcomes.stream().filter(Outcome::succeeded).count()).isEqualTo(12);
+      assertThat(locking.balance(hot)).isZero();
+      assertAuditClean(locking);
+    }
+  }
+
   /** A transaction stuck on a row must end in a refusal the client can retry, not in a hang. */
   @Test
   void aStuckLockHolderBecomesAContentionRefusal() {

@@ -1,0 +1,13 @@
+diff --git a/src/main/java/io/github/matejpopovski/ledgerline/posting/ConcurrencyStrategy.java b/src/main/java/io/github/matejpopovski/ledgerline/posting/ConcurrencyStrategy.java
+index 4ab45c3..b9eeb05 100644
+--- a/src/main/java/io/github/matejpopovski/ledgerline/posting/ConcurrencyStrategy.java
++++ b/src/main/java/io/github/matejpopovski/ledgerline/posting/ConcurrencyStrategy.java
+@@ -12,7 +12,7 @@ public enum ConcurrencyStrategy {
+   ROW_LOCK(TransactionDefinition.ISOLATION_READ_COMMITTED, true),
+ 
+   /** SERIALIZABLE (SSI) with no explicit locks, retrying on SQLSTATE 40001. */
+-  SERIALIZABLE(TransactionDefinition.ISOLATION_SERIALIZABLE, false),
++  SERIALIZABLE(TransactionDefinition.ISOLATION_READ_COMMITTED, false),
+ 
+   /**
+    * REPEATABLE READ (snapshot isolation) with retry. Sufficient here because every account an entry

@@ -1,0 +1,13 @@
+diff --git a/src/main/java/io/github/matejpopovski/ledgerline/store/LedgerStore.java b/src/main/java/io/github/matejpopovski/ledgerline/store/LedgerStore.java
+index a9a206a..9c33508 100644
+--- a/src/main/java/io/github/matejpopovski/ledgerline/store/LedgerStore.java
++++ b/src/main/java/io/github/matejpopovski/ledgerline/store/LedgerStore.java
+@@ -105,7 +105,7 @@ public class LedgerStore {
+         jdbc.sql(
+                 "SELECT "
+                     + ACCOUNT_COLUMNS
+-                    + " FROM accounts WHERE id IN (:ids) ORDER BY id FOR NO KEY UPDATE")
++                    + " FROM accounts WHERE id IN (:ids) ORDER BY id")
+             .param("ids", ids)
+             .query(ACCOUNT)
+             .list());

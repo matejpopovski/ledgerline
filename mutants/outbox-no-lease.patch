@@ -1,0 +1,13 @@
+diff --git a/src/main/java/io/github/matejpopovski/ledgerline/outbox/OutboxStore.java b/src/main/java/io/github/matejpopovski/ledgerline/outbox/OutboxStore.java
+index ad5dffa..81afbb7 100644
+--- a/src/main/java/io/github/matejpopovski/ledgerline/outbox/OutboxStore.java
++++ b/src/main/java/io/github/matejpopovski/ledgerline/outbox/OutboxStore.java
+@@ -52,7 +52,7 @@ public class OutboxStore {
+             """
+             UPDATE outbox_events o
+             SET attempts = o.attempts + 1,
+-                next_attempt_at = now() + make_interval(secs => :leaseSeconds)
++                next_attempt_at = now() + make_interval(secs => :leaseSeconds * 0)
+             WHERE o.id IN (
+                 SELECT id FROM outbox_events
+                 WHERE published_at IS NULL AND next_attempt_at <= now()

@@ -29,7 +29,7 @@ class ImmutableJournalTest {
     ledger.jdbc.sql(sql).update();
   }
 
-  @ParameterizedTest
+  @ParameterizedTest(name = "{displayName} {0}")
   @ValueSource(
       strings = {
         "UPDATE journal_entries SET description = 'edited'",

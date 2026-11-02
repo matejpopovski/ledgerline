@@ -1,0 +1,18 @@
+diff --git a/src/main/resources/db/migration/V2__journal_guards.sql b/src/main/resources/db/migration/V2__journal_guards.sql
+index a3a9e07..c5ab489 100644
+--- a/src/main/resources/db/migration/V2__journal_guards.sql
++++ b/src/main/resources/db/migration/V2__journal_guards.sql
+@@ -20,13 +20,7 @@ CREATE TRIGGER journal_entries_no_truncate
+     BEFORE TRUNCATE ON journal_entries
+     FOR EACH STATEMENT EXECUTE FUNCTION ledger_reject_mutation();
+ 
+-CREATE TRIGGER postings_append_only
+-    BEFORE UPDATE OR DELETE ON postings
+-    FOR EACH ROW EXECUTE FUNCTION ledger_reject_mutation();
+ 
+-CREATE TRIGGER postings_no_truncate
+-    BEFORE TRUNCATE ON postings
+-    FOR EACH STATEMENT EXECUTE FUNCTION ledger_reject_mutation();
+ 
+ -- Runs at COMMIT, when every leg of the entry exists. It hangs off both tables so an
+ -- entry with no postings fails too, and so does a later attempt to add a leg to an

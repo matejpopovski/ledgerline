@@ -1,0 +1,31 @@
+diff --git a/src/main/java/io/github/matejpopovski/ledgerline/domain/EntryDraft.java b/src/main/java/io/github/matejpopovski/ledgerline/domain/EntryDraft.java
+index c6f01c8..23e0dc1 100644
+--- a/src/main/java/io/github/matejpopovski/ledgerline/domain/EntryDraft.java
++++ b/src/main/java/io/github/matejpopovski/ledgerline/domain/EntryDraft.java
+@@ -1,7 +1,6 @@
+ package io.github.matejpopovski.ledgerline.domain;
+ 
+ import static io.github.matejpopovski.ledgerline.domain.LedgerRejection.Reason.INVALID_ENTRY;
+-import static io.github.matejpopovski.ledgerline.domain.LedgerRejection.Reason.UNBALANCED_ENTRY;
+ import static io.github.matejpopovski.ledgerline.domain.LedgerRejection.Reason.UNKNOWN_CURRENCY;
+ 
+ import java.nio.charset.StandardCharsets;
+@@ -62,7 +61,6 @@ public record EntryDraft(
+       throw new LedgerRejection(INVALID_ENTRY, "an entry needs 2 to " + MAX_LEGS + " postings");
+     }
+     Set<UUID> seen = new HashSet<>();
+-    long net = 0;
+     for (Leg leg : legs) {
+       if (leg.amountMinor() <= 0 || leg.amountMinor() > MinorUnits.MAX) {
+         throw new LedgerRejection(
+@@ -72,10 +70,6 @@ public record EntryDraft(
+         throw new LedgerRejection(
+             INVALID_ENTRY, "account appears twice in one entry: " + leg.accountId());
+       }
+-      net = Math.addExact(net, leg.signedAmount());
+-    }
+-    if (net != 0) {
+-      throw new LedgerRejection(UNBALANCED_ENTRY, "debits and credits differ by " + net);
+     }
+   }
+ 

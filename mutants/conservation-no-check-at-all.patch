@@ -1,0 +1,51 @@
+diff --git a/src/main/java/io/github/matejpopovski/ledgerline/domain/EntryDraft.java b/src/main/java/io/github/matejpopovski/ledgerline/domain/EntryDraft.java
+index c6f01c8..23e0dc1 100644
+--- a/src/main/java/io/github/matejpopovski/ledgerline/domain/EntryDraft.java
++++ b/src/main/java/io/github/matejpopovski/ledgerline/domain/EntryDraft.java
+@@ -1,7 +1,6 @@
+ package io.github.matejpopovski.ledgerline.domain;
+ 
+ import static io.github.matejpopovski.ledgerline.domain.LedgerRejection.Reason.INVALID_ENTRY;
+-import static io.github.matejpopovski.ledgerline.domain.LedgerRejection.Reason.UNBALANCED_ENTRY;
+ import static io.github.matejpopovski.ledgerline.domain.LedgerRejection.Reason.UNKNOWN_CURRENCY;
+ 
+ import java.nio.charset.StandardCharsets;
+@@ -62,7 +61,6 @@ public record EntryDraft(
+       throw new LedgerRejection(INVALID_ENTRY, "an entry needs 2 to " + MAX_LEGS + " postings");
+     }
+     Set<UUID> seen = new HashSet<>();
+-    long net = 0;
+     for (Leg leg : legs) {
+       if (leg.amountMinor() <= 0 || leg.amountMinor() > MinorUnits.MAX) {
+         throw new LedgerRejection(
+@@ -72,10 +70,6 @@ public record EntryDraft(
+         throw new LedgerRejection(
+             INVALID_ENTRY, "account appears twice in one entry: " + leg.accountId());
+       }
+-      net = Math.addExact(net, leg.signedAmount());
+-    }
+-    if (net != 0) {
+-      throw new LedgerRejection(UNBALANCED_ENTRY, "debits and credits differ by " + net);
+     }
+   }
+ 
+diff --git a/src/main/resources/db/migration/V2__journal_guards.sql b/src/main/resources/db/migration/V2__journal_guards.sql
+index a3a9e07..e905949 100644
+--- a/src/main/resources/db/migration/V2__journal_guards.sql
++++ b/src/main/resources/db/migration/V2__journal_guards.sql
+@@ -58,15 +58,7 @@ BEGIN
+ END;
+ $$;
+ 
+-CREATE CONSTRAINT TRIGGER postings_balanced
+-    AFTER INSERT ON postings
+-    DEFERRABLE INITIALLY DEFERRED
+-    FOR EACH ROW EXECUTE FUNCTION ledger_assert_entry_balanced();
+ 
+-CREATE CONSTRAINT TRIGGER journal_entries_balanced
+-    AFTER INSERT ON journal_entries
+-    DEFERRABLE INITIALLY DEFERRED
+-    FOR EACH ROW EXECUTE FUNCTION ledger_assert_entry_balanced();
+ 
+ -- Flipping normal_side would silently invert every historical balance, and changing
+ -- currency would reinterpret them, so neither may change once the account exists.

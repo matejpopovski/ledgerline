@@ -1,0 +1,12 @@
+diff --git a/src/main/resources/db/migration/V1__ledger_schema.sql b/src/main/resources/db/migration/V1__ledger_schema.sql
+index 81777c5..b31c26f 100644
+--- a/src/main/resources/db/migration/V1__ledger_schema.sql
++++ b/src/main/resources/db/migration/V1__ledger_schema.sql
+@@ -29,7 +29,6 @@ CREATE TABLE journal_entries (
+     posted_at         timestamptz NOT NULL DEFAULT now(),
+     CONSTRAINT journal_entries_seq_key UNIQUE (seq),
+     CONSTRAINT journal_entries_idempotency_key_key UNIQUE (idempotency_key),
+-    CONSTRAINT journal_entries_reverses_once UNIQUE (reverses_entry_id),
+     CONSTRAINT journal_entries_id_currency_key UNIQUE (id, currency),
+     CONSTRAINT journal_entries_not_self_reversing CHECK (reverses_entry_id <> id)
+ );

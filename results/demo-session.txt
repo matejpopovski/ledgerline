@@ -1,0 +1,44 @@
+--- Deposit 100.00 into Alice
+POST /v1/entries  ->  201
+{"id":"d39a5b09-0bc5-4806-8fef-fbca2582beb9","sequence":1,"replayed":false,"postings":[{"direction":"DEBIT","amountMinor":10000,"balanceAfterMinor":10000},{"direction":"CREDIT","amountMinor":10000,"balanceAfterMinor":10000}]}
+
+--- Alice pays Bob 25.50
+POST /v1/entries  ->  201
+{"id":"68e24992-f042-410c-a8c3-fa9c588ab800","sequence":2,"replayed":false,"postings":[{"direction":"DEBIT","amountMinor":2550,"balanceAfterMinor":7450},{"direction":"CREDIT","amountMinor":2550,"balanceAfterMinor":2550}]}
+
+--- The client retries after a timeout: same key, same body
+POST /v1/entries  ->  200
+{"id":"68e24992-f042-410c-a8c3-fa9c588ab800","sequence":2,"replayed":true,"postings":[{"direction":"DEBIT","amountMinor":2550,"balanceAfterMinor":7450},{"direction":"CREDIT","amountMinor":2550,"balanceAfterMinor":2550}]}
+
+--- Same key, different amount
+POST /v1/entries  ->  409
+{"code":"idempotency_key_reused","detail":"idempotency key was used for a different request"}
+
+--- Alice tries to spend more than she holds
+POST /v1/entries  ->  422
+{"code":"insufficient_funds","detail":"account alice-1793620319 holds 7450, posting needs 999999"}
+
+--- A decimal amount is refused, not truncated
+POST /v1/entries  ->  400
+{"status":400,"detail":"Failed to read request"}
+
+--- Correct the payment by reversing it
+POST /v1/entries/68e24992-f042-410c-a8c3-fa9c588ab800/reversal  ->  201
+{"id":"d588fd35-ba80-4add-beff-0c24462777ee","sequence":7,"replayed":false,"postings":[{"direction":"CREDIT","amountMinor":2550,"balanceAfterMinor":10000},{"direction":"DEBIT","amountMinor":2550,"balanceAfterMinor":0}]}
+
+--- Reverse it again with a new key
+POST /v1/entries/68e24992-f042-410c-a8c3-fa9c588ab800/reversal  ->  409
+{"code":"already_reversed","detail":"entry was already reversed: 68e24992-f042-410c-a8c3-fa9c588ab800"}
+
+--- Alice's statement, newest first
+GET /v1/accounts/dc3019de-72c0-484d-8cfd-6d70a58039ef/statement  ->  200
+[{"description":"Reversal of entry 2","direction":"CREDIT","amountMinor":2550,"balanceAfterMinor":10000},{"description":"Invoice 7","direction":"DEBIT","amountMinor":2550,"balanceAfterMinor":7450},{"description":"Deposit","direction":"CREDIT","amountMinor":10000,"balanceAfterMinor":10000}]
+
+--- Alice's balance
+GET /v1/accounts/dc3019de-72c0-484d-8cfd-6d70a58039ef  ->  200
+{"balanceMinor":10000,"balanceDisplay":"100.00"}
+
+--- Audit: recompute everything from the journal
+GET /v1/audit  ->  200
+{"clean":true,"entries":3,"postings":6,"trialBalance":[{"currency":"USD","debitsMinor":15100,"creditsMinor":15100}],"driftedAccounts":[],"runningBalanceBreaks":0,"overdrawnAccounts":0,"outboxPending":3}
+

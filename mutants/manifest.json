@@ -1,0 +1,306 @@
+{
+  "mutants": [
+    {
+      "id": "conservation-no-domain-check",
+      "invariant": "conservation",
+      "protectionRemoved": "Debits-equal-credits check in EntryDraft (the database trigger stays)",
+      "expectedKillers": [
+        "anUnbalancedEntryIsRefusedWithADomainError",
+        "refusalsAreProblemDocuments",
+        "anyImbalanceIsRejected"
+      ],
+      "patch": "conservation-no-domain-check.patch"
+    },
+    {
+      "id": "conservation-no-db-trigger",
+      "invariant": "conservation",
+      "protectionRemoved": "Deferred balance trigger on journal_entries and postings (the domain check stays)",
+      "expectedKillers": [
+        "theDatabaseRefusesAnUnbalancedEntryAtCommit",
+        "theDatabaseRefusesAnEntryWithNoPostings",
+        "theDatabaseRefusesALegAddedToACommittedEntry"
+      ],
+      "patch": "conservation-no-db-trigger.patch"
+    },
+    {
+      "id": "conservation-no-check-at-all",
+      "invariant": "conservation",
+      "protectionRemoved": "Both balance checks at once: an unbalanced entry reaches the journal",
+      "expectedKillers": [
+        "anUnbalancedEntryIsRefusedWithADomainError",
+        "theDatabaseRefusesAnUnbalancedEntryAtCommit"
+      ],
+      "patch": "conservation-no-check-at-all.patch"
+    },
+    {
+      "id": "conservation-sign-flip",
+      "invariant": "conservation",
+      "protectionRemoved": "Normal-side logic in Account.balanceAfter: a debit raises a credit-normal balance",
+      "expectedKillers": [
+        "theNormalSideRaisesTheBalance",
+        "theLedgerAgreesWithItsModel"
+      ],
+      "patch": "conservation-sign-flip.patch"
+    },
+    {
+      "id": "conservation-balance-write-skipped",
+      "invariant": "conservation",
+      "protectionRemoved": "The stored balance is not written back, so it drifts from the journal",
+      "expectedKillers": [
+        "theLedgerAgreesWithItsModel",
+        "aRetriedRequestPostsOnce",
+        "noUpdateIsLostOnAHotAccount"
+      ],
+      "patch": "conservation-balance-write-skipped.patch"
+    },
+    {
+      "id": "audit-without-snapshot",
+      "invariant": "conservation",
+      "protectionRemoved": "REPEATABLE READ on the audit: queries see different instants",
+      "expectedKillers": [
+        "oneReportDescribesOneInstantDuringConcurrentPosting"
+      ],
+      "raceTrials": 3,
+      "raceFilters": [
+        "*AuditTest"
+      ],
+      "patch": "audit-without-snapshot.patch"
+    },
+    {
+      "id": "idempotency-none",
+      "invariant": "idempotent posting",
+      "protectionRemoved": "Key uniqueness: every request is stored under a fresh key",
+      "expectedKillers": [
+        "aRetriedRequestPostsOnce",
+        "concurrentDuplicatesPostOnce"
+      ],
+      "patch": "idempotency-none.patch"
+    },
+    {
+      "id": "idempotency-check-then-insert",
+      "invariant": "idempotent posting",
+      "protectionRemoved": "The unique index: the key is only checked by a SELECT before inserting, which passes every sequential test",
+      "expectedKillers": [
+        "concurrentDuplicatesPostOnce"
+      ],
+      "raceTrials": 3,
+      "raceFilters": [
+        "*IdempotencyTest"
+      ],
+      "patch": "idempotency-check-then-insert.patch"
+    },
+    {
+      "id": "idempotency-claim-after-funds-check",
+      "invariant": "idempotent posting",
+      "protectionRemoved": "Claim-first ordering: funds are checked before the key, so a replay can be answered with a false overdraft",
+      "expectedKillers": [
+        "aRetryIsStillAnsweredAfterTheFundsAreGone",
+        "concurrentDuplicatesOfARequestThatEmptiesTheAccount"
+      ],
+      "patch": "idempotency-claim-after-funds-check.patch"
+    },
+    {
+      "id": "idempotency-no-fingerprint",
+      "invariant": "idempotent posting",
+      "protectionRemoved": "Fingerprint comparison: a reused key silently returns the old entry for a different request",
+      "expectedKillers": [
+        "aKeyReusedForADifferentRequestIsRefused",
+        "refusalsAreProblemDocuments"
+      ],
+      "patch": "idempotency-no-fingerprint.patch"
+    },
+    {
+      "id": "lock-row-lock-removed",
+      "invariant": "no lost update",
+      "protectionRemoved": "FOR NO KEY UPDATE on the account rows under READ COMMITTED",
+      "expectedKillers": [
+        "noUpdateIsLostOnAHotAccount",
+        "racingWithdrawalsCannotSpendTheSameMoneyTwice"
+      ],
+      "raceTrials": 3,
+      "raceFilters": [
+        "*ConcurrencyStrategyTest",
+        "*OverdraftTest"
+      ],
+      "patch": "lock-row-lock-removed.patch"
+    },
+    {
+      "id": "lock-order-removed",
+      "invariant": "no lost update",
+      "protectionRemoved": "Canonical lock order: rows are locked one at a time in request order",
+      "expectedKillers": [
+        "opposingTransfersDoNotDeadlock"
+      ],
+      "raceTrials": 3,
+      "raceFilters": [
+        "*ConcurrencyStrategyTest"
+      ],
+      "patch": "lock-order-removed.patch"
+    },
+    {
+      "id": "serializable-downgraded",
+      "invariant": "no lost update",
+      "protectionRemoved": "SERIALIZABLE isolation: the strategy runs at READ COMMITTED with no locks",
+      "expectedKillers": [
+        "noUpdateIsLostOnAHotAccount",
+        "racingWithdrawalsCannotSpendTheSameMoneyTwice"
+      ],
+      "raceTrials": 3,
+      "raceFilters": [
+        "*ConcurrencyStrategyTest",
+        "*OverdraftTest"
+      ],
+      "patch": "serializable-downgraded.patch"
+    },
+    {
+      "id": "retry-removed",
+      "invariant": "no lost update",
+      "protectionRemoved": "The retry loop: a serialization failure reaches the caller",
+      "expectedKillers": [
+        "noUpdateIsLostOnAHotAccount",
+        "concurrentDuplicatesPostOnce"
+      ],
+      "patch": "retry-removed.patch"
+    },
+    {
+      "id": "overdraft-no-domain-check",
+      "invariant": "no overdraft",
+      "protectionRemoved": "Funds check in Account.balanceAfter (the CHECK constraint stays)",
+      "expectedKillers": [
+        "aWithdrawalBeyondTheBalanceIsRefused",
+        "oneMinorUnitPastZeroIsRefused"
+      ],
+      "patch": "overdraft-no-domain-check.patch"
+    },
+    {
+      "id": "overdraft-no-db-check",
+      "invariant": "no overdraft",
+      "protectionRemoved": "The accounts_no_overdraft CHECK constraint (the domain check stays)",
+      "expectedKillers": [
+        "theDatabaseRefusesANegativeBalanceWrittenBehindTheService"
+      ],
+      "patch": "overdraft-no-db-check.patch"
+    },
+    {
+      "id": "overdraft-no-check-at-all",
+      "invariant": "no overdraft",
+      "protectionRemoved": "Both overdraft checks at once: accounts really go negative",
+      "expectedKillers": [
+        "racingWithdrawalsCannotSpendTheSameMoneyTwice",
+        "aWithdrawalBeyondTheBalanceIsRefused",
+        "theLedgerAgreesWithItsModel"
+      ],
+      "patch": "overdraft-no-check-at-all.patch"
+    },
+    {
+      "id": "immutable-entries-unguarded",
+      "invariant": "immutable journal",
+      "protectionRemoved": "Append-only triggers on journal_entries",
+      "expectedKillers": [
+        "theDatabaseRefusesEveryKindOfEdit"
+      ],
+      "patch": "immutable-entries-unguarded.patch"
+    },
+    {
+      "id": "immutable-postings-unguarded",
+      "invariant": "immutable journal",
+      "protectionRemoved": "Append-only triggers on postings",
+      "expectedKillers": [
+        "theDatabaseRefusesEveryKindOfEdit"
+      ],
+      "patch": "immutable-postings-unguarded.patch"
+    },
+    {
+      "id": "immutable-reversal-not-unique",
+      "invariant": "immutable journal",
+      "protectionRemoved": "The one-reversal-per-entry unique constraint",
+      "expectedKillers": [
+        "anEntryCanOnlyBeReversedOnce",
+        "racingReversalsWithDifferentKeysApplyOnce"
+      ],
+      "patch": "immutable-reversal-not-unique.patch"
+    },
+    {
+      "id": "immutable-account-identity",
+      "invariant": "immutable journal",
+      "protectionRemoved": "Trigger keeping an account's currency and normal side fixed",
+      "expectedKillers": [
+        "anAccountCannotChangeItsCurrencyOrNormalSide"
+      ],
+      "patch": "immutable-account-identity.patch"
+    },
+    {
+      "id": "money-decimal-truncated",
+      "invariant": "exact money",
+      "protectionRemoved": "Strict number parsing: Jackson truncates 10.5 to 10 on a long field",
+      "expectedKillers": [
+        "aDecimalAmountIsRefusedNotTruncated"
+      ],
+      "patch": "money-decimal-truncated.patch"
+    },
+    {
+      "id": "money-string-coerced",
+      "invariant": "exact money",
+      "protectionRemoved": "Scalar coercion off: the string \"100\" is accepted as an amount",
+      "expectedKillers": [
+        "aStringAmountIsRefused"
+      ],
+      "patch": "money-string-coerced.patch"
+    },
+    {
+      "id": "money-currency-fk-removed",
+      "invariant": "exact money",
+      "protectionRemoved": "Composite foreign key tying a posting to its account currency",
+      "expectedKillers": [
+        "anEntryCannotMixCurrenciesEvenBehindTheService"
+      ],
+      "patch": "money-currency-fk-removed.patch"
+    },
+    {
+      "id": "timeouts-not-configured",
+      "invariant": "bounded waiting",
+      "protectionRemoved": "Connection init SQL: no lock_timeout, so a stuck row holder blocks callers indefinitely",
+      "expectedKillers": [
+        "connectionsCarryTheLockAndStatementTimeouts"
+      ],
+      "patch": "timeouts-not-configured.patch"
+    },
+    {
+      "id": "outbox-dual-write",
+      "invariant": "outbox atomicity",
+      "protectionRemoved": "Same-transaction outbox insert: the event is written after the entry commits",
+      "expectedKillers": [
+        "anEntryThatCannotRecordItsEventDoesNotPost"
+      ],
+      "patch": "outbox-dual-write.patch"
+    },
+    {
+      "id": "outbox-no-lease",
+      "invariant": "outbox delivery",
+      "protectionRemoved": "The claim lease: a claimed event is immediately claimable again",
+      "expectedKillers": [
+        "anEventClaimedByACrashedRelay",
+        "parallelRelaysNeverClaimTheSameEvent"
+      ],
+      "patch": "outbox-no-lease.patch"
+    },
+    {
+      "id": "outbox-failure-marked-published",
+      "invariant": "outbox delivery",
+      "protectionRemoved": "Failure handling: an event is marked published even though the sink refused it",
+      "expectedKillers": [
+        "aFailedDeliveryStaysQueuedBacksOffAndIsRetried"
+      ],
+      "patch": "outbox-failure-marked-published.patch"
+    },
+    {
+      "id": "outbox-skip-locked-removed",
+      "invariant": "outbox delivery",
+      "protectionRemoved": "SKIP LOCKED: relays wait for each other",
+      "expectedKillers": [],
+      "expected": "survives",
+      "why": "Liveness, not safety. A blocked relay re-evaluates the row after the first commits, sees the lease, and skips it, so no invariant changes.",
+      "patch": "outbox-skip-locked-removed.patch"
+    }
+  ]
+}

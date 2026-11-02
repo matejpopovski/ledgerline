@@ -1,0 +1,18 @@
+diff --git a/src/main/resources/db/migration/V2__journal_guards.sql b/src/main/resources/db/migration/V2__journal_guards.sql
+index a3a9e07..bda6b46 100644
+--- a/src/main/resources/db/migration/V2__journal_guards.sql
++++ b/src/main/resources/db/migration/V2__journal_guards.sql
+@@ -12,13 +12,7 @@ BEGIN
+ END;
+ $$;
+ 
+-CREATE TRIGGER journal_entries_append_only
+-    BEFORE UPDATE OR DELETE ON journal_entries
+-    FOR EACH ROW EXECUTE FUNCTION ledger_reject_mutation();
+ 
+-CREATE TRIGGER journal_entries_no_truncate
+-    BEFORE TRUNCATE ON journal_entries
+-    FOR EACH STATEMENT EXECUTE FUNCTION ledger_reject_mutation();
+ 
+ CREATE TRIGGER postings_append_only
+     BEFORE UPDATE OR DELETE ON postings

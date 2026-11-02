@@ -1,0 +1,36 @@
+diff --git a/src/main/java/io/github/matejpopovski/ledgerline/domain/Account.java b/src/main/java/io/github/matejpopovski/ledgerline/domain/Account.java
+index 1337c06..dfd517d 100644
+--- a/src/main/java/io/github/matejpopovski/ledgerline/domain/Account.java
++++ b/src/main/java/io/github/matejpopovski/ledgerline/domain/Account.java
+@@ -1,7 +1,6 @@
+ package io.github.matejpopovski.ledgerline.domain;
+ 
+ import static io.github.matejpopovski.ledgerline.domain.LedgerRejection.Reason.BALANCE_OUT_OF_RANGE;
+-import static io.github.matejpopovski.ledgerline.domain.LedgerRejection.Reason.INSUFFICIENT_FUNDS;
+ 
+ import java.time.Instant;
+ import java.util.UUID;
+@@ -27,11 +26,6 @@ public record Account(
+     if (Math.abs(next) > MinorUnits.MAX) {
+       throw new LedgerRejection(BALANCE_OUT_OF_RANGE, "balance would leave the supported range");
+     }
+-    if (!overdraftAllowed && next < 0) {
+-      throw new LedgerRejection(
+-          INSUFFICIENT_FUNDS,
+-          "account %s holds %d, posting needs %d".formatted(code, balanceMinor, leg.amountMinor()));
+-    }
+     return next;
+   }
+ }
+diff --git a/src/main/resources/db/migration/V1__ledger_schema.sql b/src/main/resources/db/migration/V1__ledger_schema.sql
+index 81777c5..2b3cd74 100644
+--- a/src/main/resources/db/migration/V1__ledger_schema.sql
++++ b/src/main/resources/db/migration/V1__ledger_schema.sql
+@@ -12,7 +12,6 @@ CREATE TABLE accounts (
+     created_at        timestamptz NOT NULL DEFAULT now(),
+     CONSTRAINT accounts_code_key UNIQUE (code),
+     CONSTRAINT accounts_id_currency_key UNIQUE (id, currency),
+-    CONSTRAINT accounts_no_overdraft CHECK (overdraft_allowed OR balance_minor >= 0),
+     CONSTRAINT accounts_balance_range CHECK (balance_minor BETWEEN -9007199254740991 AND 9007199254740991)
+ ) WITH (fillfactor = 50);
+ -- balance_minor is in no index, so the free space above lets the hottest rows in the

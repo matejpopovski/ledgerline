@@ -1,0 +1,13 @@
+diff --git a/src/main/java/io/github/matejpopovski/ledgerline/domain/Account.java b/src/main/java/io/github/matejpopovski/ledgerline/domain/Account.java
+index 1337c06..edae2c3 100644
+--- a/src/main/java/io/github/matejpopovski/ledgerline/domain/Account.java
++++ b/src/main/java/io/github/matejpopovski/ledgerline/domain/Account.java
+@@ -22,7 +22,7 @@ public record Account(
+ 
+   /** The balance after applying a leg, or a rejection if the account may not end up there. */
+   public long balanceAfter(Leg leg) {
+-    long delta = leg.direction() == normalSide ? leg.amountMinor() : -leg.amountMinor();
++    long delta = leg.direction() != normalSide ? leg.amountMinor() : -leg.amountMinor();
+     long next = Math.addExact(balanceMinor, delta);
+     if (Math.abs(next) > MinorUnits.MAX) {
+       throw new LedgerRejection(BALANCE_OUT_OF_RANGE, "balance would leave the supported range");

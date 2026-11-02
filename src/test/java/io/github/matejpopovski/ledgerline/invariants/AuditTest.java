@@ -11,7 +11,7 @@ import io.github.matejpopovski.ledgerline.support.Race.Outcome;
 import io.github.matejpopovski.ledgerline.support.TestLedger;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 
 /** The audit is the alarm for everything above, so it must fire and must not fire falsely. */
@@ -88,31 +88,43 @@ class AuditTest {
     }
   }
 
-  /** Commits landing between the audit's queries must not read as drift: it needs one snapshot. */
+  /**
+   * Each comparison in the audit is one statement, so it cannot disagree with itself. What needs
+   * the shared snapshot is the report as a whole: here every entry has two legs of known size, so
+   * its counts and totals only line up if they all describe the same instant.
+   */
   @Test
-  void aRunningAuditNeverFalselyAlarmsDuringConcurrentPosting() {
+  void oneReportDescribesOneInstantDuringConcurrentPosting() {
+    long opening = 1_000_000;
     try (TestLedger ledger = TestLedger.create(ConcurrencyStrategy.ROW_LOCK)) {
-      Account a = ledger.fundedWallet("USD", 1_000_000);
+      Account a = ledger.fundedWallet("USD", opening);
       Account b = ledger.wallet("USD");
-      AtomicBoolean done = new AtomicBoolean();
+      AtomicInteger writersLeft = new AtomicInteger(4);
 
       List<Outcome<Integer>> outcomes =
           Race.run(
-              5,
+              8,
               racer -> {
-                int cleanRuns = 0;
-                if (racer == 0) {
-                  for (int i = 0; i < 400; i++) {
-                    ledger.move(UUID.randomUUID().toString(), a, b, 1);
+                if (racer < 4) {
+                  try {
+                    for (int i = 0; i < 300; i++) {
+                      ledger.move(UUID.randomUUID().toString(), a, b, 1);
+                    }
+                  } finally {
+                    writersLeft.decrementAndGet();
                   }
-                  done.set(true);
                   return 0;
                 }
-                while (!done.get()) {
-                  assertThat(ledger.auditReport().clean()).isTrue();
-                  cleanRuns++;
+                int reports = 0;
+                while (writersLeft.get() > 0) {
+                  AuditReport report = ledger.auditReport();
+                  assertThat(report.clean()).isTrue();
+                  assertThat(report.postings()).isEqualTo(2 * report.entries());
+                  assertThat(report.trialBalance().getFirst().debitsMinor())
+                      .isEqualTo(opening + report.entries() - 1);
+                  reports++;
                 }
-                return cleanRuns;
+                return reports;
               });
 
       assertThat(outcomes).allMatch(Outcome::succeeded);

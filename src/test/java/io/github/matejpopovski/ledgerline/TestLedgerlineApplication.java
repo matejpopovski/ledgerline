@@ -1,7 +1,6 @@
 package io.github.matejpopovski.ledgerline;
 
 import io.github.matejpopovski.ledgerline.support.TestDatabase;
-import java.util.Map;
 import org.springframework.boot.SpringApplication;
 
 /**
@@ -13,13 +12,9 @@ public final class TestLedgerlineApplication {
   private TestLedgerlineApplication() {}
 
   public static void main(String[] args) {
-    SpringApplication application = new SpringApplication(LedgerlineApplication.class);
-    application.setDefaultProperties(
-        Map.of(
-            "spring.datasource.url",
-            TestDatabase.freshDatabaseUrl(),
-            "spring.datasource.username",
-            "postgres"));
-    application.run(args);
+    // System properties, because they outrank application.yaml and default properties do not.
+    System.setProperty("spring.datasource.url", TestDatabase.freshDatabaseUrl());
+    System.setProperty("spring.datasource.username", "postgres");
+    SpringApplication.run(LedgerlineApplication.class, args);
   }
 }

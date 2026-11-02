@@ -1,0 +1,42 @@
+diff --git a/src/main/java/io/github/matejpopovski/ledgerline/domain/EntryDraft.java b/src/main/java/io/github/matejpopovski/ledgerline/domain/EntryDraft.java
+index c6f01c8..eb925ff 100644
+--- a/src/main/java/io/github/matejpopovski/ledgerline/domain/EntryDraft.java
++++ b/src/main/java/io/github/matejpopovski/ledgerline/domain/EntryDraft.java
+@@ -81,7 +81,7 @@ public record EntryDraft(
+ 
+   /** Account ids in lock order. Every writer must touch accounts in this order. */
+   public List<UUID> accountIdsInLockOrder() {
+-    return legs.stream().map(Leg::accountId).sorted().toList();
++    return legs.stream().map(Leg::accountId).toList();
+   }
+ 
+   /**
+diff --git a/src/main/java/io/github/matejpopovski/ledgerline/store/LedgerStore.java b/src/main/java/io/github/matejpopovski/ledgerline/store/LedgerStore.java
+index a9a206a..26d2ea7 100644
+--- a/src/main/java/io/github/matejpopovski/ledgerline/store/LedgerStore.java
++++ b/src/main/java/io/github/matejpopovski/ledgerline/store/LedgerStore.java
+@@ -102,13 +102,17 @@ public class LedgerStore {
+    */
+   public Map<UUID, Account> lockAccounts(Collection<UUID> ids) {
+     return byId(
+-        jdbc.sql(
+-                "SELECT "
+-                    + ACCOUNT_COLUMNS
+-                    + " FROM accounts WHERE id IN (:ids) ORDER BY id FOR NO KEY UPDATE")
+-            .param("ids", ids)
+-            .query(ACCOUNT)
+-            .list());
++        ids.stream()
++            .map(
++                id ->
++                    jdbc.sql(
++                            "SELECT "
++                                + ACCOUNT_COLUMNS
++                                + " FROM accounts WHERE id = :id FOR NO KEY UPDATE")
++                        .param("id", id)
++                        .query(ACCOUNT)
++                        .single())
++            .toList());
+   }
+ 
+   private static Map<UUID, Account> byId(List<Account> accounts) {

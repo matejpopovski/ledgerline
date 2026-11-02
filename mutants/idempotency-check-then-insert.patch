@@ -1,0 +1,26 @@
+diff --git a/src/main/java/io/github/matejpopovski/ledgerline/store/LedgerStore.java b/src/main/java/io/github/matejpopovski/ledgerline/store/LedgerStore.java
+index a9a206a..a117c9e 100644
+--- a/src/main/java/io/github/matejpopovski/ledgerline/store/LedgerStore.java
++++ b/src/main/java/io/github/matejpopovski/ledgerline/store/LedgerStore.java
+@@ -128,7 +128,8 @@ public class LedgerStore {
+             """
+             INSERT INTO journal_entries
+                 (id, idempotency_key, fingerprint, currency, description, reverses_entry_id)
+-            VALUES (:id, :key, :fingerprint, :currency, :description, :reverses)
++            SELECT :id, :key, :fingerprint, :currency, :description, CAST(:reverses AS uuid)
++            WHERE NOT EXISTS (SELECT 1 FROM journal_entries WHERE idempotency_key = :key)
+             ON CONFLICT DO NOTHING
+             RETURNING seq, posted_at
+             """)
+diff --git a/src/main/resources/db/migration/V1__ledger_schema.sql b/src/main/resources/db/migration/V1__ledger_schema.sql
+index 81777c5..83fef79 100644
+--- a/src/main/resources/db/migration/V1__ledger_schema.sql
++++ b/src/main/resources/db/migration/V1__ledger_schema.sql
+@@ -28,7 +28,6 @@ CREATE TABLE journal_entries (
+     reverses_entry_id uuid        REFERENCES journal_entries (id),
+     posted_at         timestamptz NOT NULL DEFAULT now(),
+     CONSTRAINT journal_entries_seq_key UNIQUE (seq),
+-    CONSTRAINT journal_entries_idempotency_key_key UNIQUE (idempotency_key),
+     CONSTRAINT journal_entries_reverses_once UNIQUE (reverses_entry_id),
+     CONSTRAINT journal_entries_id_currency_key UNIQUE (id, currency),
+     CONSTRAINT journal_entries_not_self_reversing CHECK (reverses_entry_id <> id)

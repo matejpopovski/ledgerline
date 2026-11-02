@@ -1,0 +1,13 @@
+diff --git a/src/main/java/io/github/matejpopovski/ledgerline/outbox/OutboxRelay.java b/src/main/java/io/github/matejpopovski/ledgerline/outbox/OutboxRelay.java
+index 04eb781..a7d971a 100644
+--- a/src/main/java/io/github/matejpopovski/ledgerline/outbox/OutboxRelay.java
++++ b/src/main/java/io/github/matejpopovski/ledgerline/outbox/OutboxRelay.java
+@@ -66,7 +66,7 @@ public class OutboxRelay {
+   private void recordFailure(OutboxEvent event, Exception failure) {
+     meters.counter("ledger.outbox.failed").increment();
+     log.warn("outbox event {} attempt {} failed", event.eventId(), event.attempts(), failure);
+-    store.markFailed(event.id(), String.valueOf(failure), backoff(event.attempts()));
++    store.markPublished(event.id());
+   }
+ 
+   static Duration backoff(int attempts) {

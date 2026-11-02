@@ -1,0 +1,13 @@
+diff --git a/src/main/java/io/github/matejpopovski/ledgerline/posting/RetryingTransactions.java b/src/main/java/io/github/matejpopovski/ledgerline/posting/RetryingTransactions.java
+index c6d43fc..d3f3313 100644
+--- a/src/main/java/io/github/matejpopovski/ledgerline/posting/RetryingTransactions.java
++++ b/src/main/java/io/github/matejpopovski/ledgerline/posting/RetryingTransactions.java
+@@ -43,7 +43,7 @@ public class RetryingTransactions {
+           throw failure;
+         }
+         meters.counter("ledger.transaction.retries", "sqlstate", state.get()).increment();
+-        if (attempt == policy.maxAttempts()) {
++        if (attempt >= 1) {
+           meters.counter("ledger.transaction.exhausted").increment();
+           throw new LedgerRejection(
+               CONTENTION_LIMIT, "gave up after " + attempt + " attempts, last " + state.get());

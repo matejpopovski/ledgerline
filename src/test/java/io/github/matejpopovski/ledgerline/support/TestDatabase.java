@@ -25,8 +25,12 @@ public final class TestDatabase {
 
   private static EmbeddedPostgres start() {
     try {
+      // A deadlock is a test failure here, so there is no reason to wait a second to learn of it.
       EmbeddedPostgres postgres =
-          EmbeddedPostgres.builder().setServerConfig("max_connections", "300").start();
+          EmbeddedPostgres.builder()
+              .setServerConfig("max_connections", "300")
+              .setServerConfig("deadlock_timeout", "100ms")
+              .start();
       execute(postgres.getPostgresDatabase(), "CREATE DATABASE " + TEMPLATE);
       Flyway.configure().dataSource(postgres.getDatabase("postgres", TEMPLATE)).load().migrate();
       Runtime.getRuntime().addShutdownHook(new Thread(TestDatabase::stop));

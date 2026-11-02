@@ -1,0 +1,24 @@
+diff --git a/src/main/java/io/github/matejpopovski/ledgerline/domain/Account.java b/src/main/java/io/github/matejpopovski/ledgerline/domain/Account.java
+index 1337c06..dfd517d 100644
+--- a/src/main/java/io/github/matejpopovski/ledgerline/domain/Account.java
++++ b/src/main/java/io/github/matejpopovski/ledgerline/domain/Account.java
+@@ -1,7 +1,6 @@
+ package io.github.matejpopovski.ledgerline.domain;
+ 
+ import static io.github.matejpopovski.ledgerline.domain.LedgerRejection.Reason.BALANCE_OUT_OF_RANGE;
+-import static io.github.matejpopovski.ledgerline.domain.LedgerRejection.Reason.INSUFFICIENT_FUNDS;
+ 
+ import java.time.Instant;
+ import java.util.UUID;
+@@ -27,11 +26,6 @@ public record Account(
+     if (Math.abs(next) > MinorUnits.MAX) {
+       throw new LedgerRejection(BALANCE_OUT_OF_RANGE, "balance would leave the supported range");
+     }
+-    if (!overdraftAllowed && next < 0) {
+-      throw new LedgerRejection(
+-          INSUFFICIENT_FUNDS,
+-          "account %s holds %d, posting needs %d".formatted(code, balanceMinor, leg.amountMinor()));
+-    }
+     return next;
+   }
+ }

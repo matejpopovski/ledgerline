@@ -1,0 +1,13 @@
+diff --git a/src/main/java/io/github/matejpopovski/ledgerline/outbox/OutboxStore.java b/src/main/java/io/github/matejpopovski/ledgerline/outbox/OutboxStore.java
+index ad5dffa..096781c 100644
+--- a/src/main/java/io/github/matejpopovski/ledgerline/outbox/OutboxStore.java
++++ b/src/main/java/io/github/matejpopovski/ledgerline/outbox/OutboxStore.java
+@@ -58,7 +58,7 @@ public class OutboxStore {
+                 WHERE published_at IS NULL AND next_attempt_at <= now()
+                 ORDER BY next_attempt_at, id
+                 LIMIT :limit
+-                FOR UPDATE SKIP LOCKED)
++                FOR UPDATE)
+             RETURNING o.id, o.event_id, o.event_type, o.payload::text AS payload, o.attempts
+             """)
+         .param("leaseSeconds", (double) lease.toSeconds())

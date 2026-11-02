@@ -1,0 +1,25 @@
+diff --git a/src/main/java/io/github/matejpopovski/ledgerline/posting/PostingService.java b/src/main/java/io/github/matejpopovski/ledgerline/posting/PostingService.java
+index ecb8d8a..f24c918 100644
+--- a/src/main/java/io/github/matejpopovski/ledgerline/posting/PostingService.java
++++ b/src/main/java/io/github/matejpopovski/ledgerline/posting/PostingService.java
+@@ -49,6 +49,9 @@ public class PostingService {
+   public PostedEntry post(EntryDraft draft) {
+     String fingerprint = draft.fingerprint();
+     PostedEntry result = transactions.execute(() -> postOnce(draft, fingerprint));
++    if (!result.replayed()) {
++      outbox.enqueue(result);
++    }
+     meters
+         .counter("ledger.entries", "outcome", result.replayed() ? "replayed" : "posted")
+         .increment();
+@@ -96,9 +99,7 @@ public class PostingService {
+     store.writeBalances(plan);
+     store.insertPostings(entryId, draft.currency(), plan);
+ 
+-    PostedEntry posted = toPostedEntry(entryId, draft, claim.get(), plan);
+-    outbox.enqueue(posted);
+-    return posted;
++    return toPostedEntry(entryId, draft, claim.get(), plan);
+   }
+ 
+   private PostedEntry replay(EntryDraft draft, String fingerprint) {

@@ -1,0 +1,41 @@
+diff --git a/src/main/java/io/github/matejpopovski/ledgerline/posting/PostingService.java b/src/main/java/io/github/matejpopovski/ledgerline/posting/PostingService.java
+index ecb8d8a..d3dfa01 100644
+--- a/src/main/java/io/github/matejpopovski/ledgerline/posting/PostingService.java
++++ b/src/main/java/io/github/matejpopovski/ledgerline/posting/PostingService.java
+@@ -2,7 +2,6 @@ package io.github.matejpopovski.ledgerline.posting;
+ 
+ import static io.github.matejpopovski.ledgerline.domain.LedgerRejection.Reason.ALREADY_REVERSED;
+ import static io.github.matejpopovski.ledgerline.domain.LedgerRejection.Reason.ENTRY_NOT_FOUND;
+-import static io.github.matejpopovski.ledgerline.domain.LedgerRejection.Reason.IDEMPOTENCY_KEY_REUSED;
+ 
+ import io.github.matejpopovski.ledgerline.domain.Account;
+ import io.github.matejpopovski.ledgerline.domain.EntryDraft;
+@@ -85,7 +84,7 @@ public class PostingService {
+     UUID entryId = UUID.randomUUID();
+     Optional<EntryClaim> claim = store.claimEntry(entryId, draft, fingerprint);
+     if (claim.isEmpty()) {
+-      return replay(draft, fingerprint);
++      return replay(draft);
+     }
+ 
+     List<UUID> accountIds = draft.accountIdsInLockOrder();
+@@ -101,7 +100,7 @@ public class PostingService {
+     return posted;
+   }
+ 
+-  private PostedEntry replay(EntryDraft draft, String fingerprint) {
++  private PostedEntry replay(EntryDraft draft) {
+     LedgerStore.StoredEntry stored =
+         store
+             .findEntryByKey(draft.idempotencyKey())
+@@ -110,10 +109,6 @@ public class PostingService {
+                     new LedgerRejection(
+                         ALREADY_REVERSED,
+                         "entry was already reversed: " + draft.reversesEntryId()));
+-    if (!stored.fingerprint().equals(fingerprint)) {
+-      throw new LedgerRejection(
+-          IDEMPOTENCY_KEY_REUSED, "idempotency key was used for a different request");
+-    }
+     return stored.entry().asReplay();
+   }
+ 

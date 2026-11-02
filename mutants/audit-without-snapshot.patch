@@ -1,0 +1,20 @@
+diff --git a/src/main/java/io/github/matejpopovski/ledgerline/audit/AuditService.java b/src/main/java/io/github/matejpopovski/ledgerline/audit/AuditService.java
+index 61833e3..d3d96e2 100644
+--- a/src/main/java/io/github/matejpopovski/ledgerline/audit/AuditService.java
++++ b/src/main/java/io/github/matejpopovski/ledgerline/audit/AuditService.java
+@@ -7,7 +7,6 @@ import java.util.List;
+ import java.util.UUID;
+ import org.springframework.jdbc.core.simple.JdbcClient;
+ import org.springframework.transaction.PlatformTransactionManager;
+-import org.springframework.transaction.TransactionDefinition;
+ import org.springframework.transaction.support.TransactionTemplate;
+ 
+ /**
+@@ -27,7 +26,6 @@ public class AuditService {
+     this.snapshot = new TransactionTemplate(transactionManager);
+     // Each comparison below is a single statement and so agrees with itself. The shared
+     // snapshot is what lets the counts and totals in one report be compared to each other.
+-    this.snapshot.setIsolationLevel(TransactionDefinition.ISOLATION_REPEATABLE_READ);
+     this.snapshot.setReadOnly(true);
+   }
+ 

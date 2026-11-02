@@ -1,12 +1,9 @@
 package io.github.matejpopovski.ledgerline.support;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.function.IntFunction;
 
@@ -24,37 +21,68 @@ public final class Race {
     }
   }
 
+  /**
+   * Racers are daemon threads and the wait is bounded, so a racer stuck in the database fails the
+   * test with its stack trace instead of hanging the build.
+   */
   public static <T> List<Outcome<T>> run(int racers, IntFunction<T> task) {
     CountDownLatch ready = new CountDownLatch(racers);
     CountDownLatch go = new CountDownLatch(1);
-    try (ExecutorService pool = Executors.newFixedThreadPool(racers)) {
-      List<Future<Outcome<T>>> futures = new ArrayList<>(racers);
-      for (int i = 0; i < racers; i++) {
-        int index = i;
-        futures.add(
-            pool.submit(
-                () -> {
-                  ready.countDown();
-                  go.await();
-                  try {
-                    return new Outcome<T>(task.apply(index), null);
-                  } catch (RuntimeException e) {
-                    return new Outcome<T>(null, e);
-                  }
-                }));
-      }
+    CountDownLatch finished = new CountDownLatch(racers);
+    List<Outcome<T>> outcomes = new ArrayList<>(racers);
+    List<Thread> threads = new ArrayList<>(racers);
+    for (int i = 0; i < racers; i++) {
+      outcomes.add(null);
+      int index = i;
+      threads.add(
+          Thread.ofPlatform()
+              .daemon()
+              .name("racer-" + i)
+              .start(
+                  () -> {
+                    ready.countDown();
+                    try {
+                      go.await();
+                      Outcome<T> outcome = new Outcome<>(task.apply(index), null);
+                      synchronized (outcomes) {
+                        outcomes.set(index, outcome);
+                      }
+                    } catch (RuntimeException | AssertionError e) {
+                      synchronized (outcomes) {
+                        outcomes.set(index, new Outcome<>(null, e));
+                      }
+                    } catch (InterruptedException e) {
+                      Thread.currentThread().interrupt();
+                    } finally {
+                      finished.countDown();
+                    }
+                  }));
+    }
+    try {
       ready.await();
       go.countDown();
-      List<Outcome<T>> outcomes = new ArrayList<>(racers);
-      for (Future<Outcome<T>> future : futures) {
-        outcomes.add(future.get(TIMEOUT_SECONDS, TimeUnit.SECONDS));
+      if (!finished.await(TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+        throw new AssertionError("racers still running: " + stacks(threads));
       }
-      return outcomes;
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       throw new IllegalStateException(e);
-    } catch (ExecutionException | java.util.concurrent.TimeoutException e) {
-      throw new IllegalStateException(e);
     }
+    synchronized (outcomes) {
+      return List.copyOf(outcomes);
+    }
+  }
+
+  private static String stacks(List<Thread> threads) {
+    StringBuilder out = new StringBuilder();
+    for (Thread thread : threads) {
+      if (thread.isAlive()) {
+        out.append('\n').append(thread.getName()).append(' ').append(thread.getState());
+        Arrays.stream(thread.getStackTrace())
+            .limit(30)
+            .forEach(frame -> out.append("\n  at ").append(frame));
+      }
+    }
+    return out.toString();
   }
 }

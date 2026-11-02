@@ -1,0 +1,20 @@
+diff --git a/src/main/resources/db/migration/V2__journal_guards.sql b/src/main/resources/db/migration/V2__journal_guards.sql
+index a3a9e07..e905949 100644
+--- a/src/main/resources/db/migration/V2__journal_guards.sql
++++ b/src/main/resources/db/migration/V2__journal_guards.sql
+@@ -58,15 +58,7 @@ BEGIN
+ END;
+ $$;
+ 
+-CREATE CONSTRAINT TRIGGER postings_balanced
+-    AFTER INSERT ON postings
+-    DEFERRABLE INITIALLY DEFERRED
+-    FOR EACH ROW EXECUTE FUNCTION ledger_assert_entry_balanced();
+ 
+-CREATE CONSTRAINT TRIGGER journal_entries_balanced
+-    AFTER INSERT ON journal_entries
+-    DEFERRABLE INITIALLY DEFERRED
+-    FOR EACH ROW EXECUTE FUNCTION ledger_assert_entry_balanced();
+ 
+ -- Flipping normal_side would silently invert every historical balance, and changing
+ -- currency would reinterpret them, so neither may change once the account exists.
