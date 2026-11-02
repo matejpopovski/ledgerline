@@ -20,11 +20,9 @@ jobs:
           distribution: temurin
           java-version: "22"
           cache: gradle
-      # env -u: setup-java puts the JDK on PATH, so a stale JAVA_HOME on a local replay
-      # of these steps cannot stop ./gradlew from finding it.
       - name: Formatting
-        run: env -u JAVA_HOME ./gradlew spotlessCheck
+        run: ./gradlew spotlessCheck
       - name: Compile with lint and Error Prone, then test on embedded Postgres
-        run: env -u JAVA_HOME ./gradlew test compileBenchJava
+        run: ./gradlew test compileBenchJava
       - name: Mutant patches still apply to this source
         run: python3 scripts/prove_mutants.py --check-patches

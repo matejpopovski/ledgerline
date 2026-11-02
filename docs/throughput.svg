@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 966 442" width="966" height="442" role="img" aria-label="Throughput of three lock strategies by contention and workers">
+<title>Throughput of three lock strategies by contention and workers</title>
+<rect width="966" height="442" fill="#f6f8ee"/>
+<line x1="26" y1="0" x2="26" y2="442" stroke="#d98c8c" stroke-width="1.5"/>
+<text x="44" y="36" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="19" fill="#1f2a24" text-anchor="start" font-weight="bold">Committed entries per second, median of repeats</text>
+<text x="44" y="60" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#55645b" text-anchor="start" font-weight="normal">Apple M3 Max, embedded Postgres 18.6, machine shared with other jobs</text>
+<rect x="44" y="74" width="12" height="12" rx="2" fill="#2a78d6"/>
+<text x="62" y="85" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#1f2a24" text-anchor="start" font-weight="normal">row lock</text>
+<rect x="156" y="74" width="12" height="12" rx="2" fill="#eb6834"/>
+<text x="174" y="85" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#1f2a24" text-anchor="start" font-weight="normal">serializable + retry</text>
+<rect x="364" y="74" width="12" height="12" rx="2" fill="#1baf7a"/>
+<text x="382" y="85" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#1f2a24" text-anchor="start" font-weight="normal">repeatable read + retry</text>
+<line x1="96" y1="368.0" x2="346" y2="368.0" stroke="#5f8f75" stroke-width="1"/>
+<text x="88" y="372.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" fill="#55645b" text-anchor="end" font-weight="normal">0</text>
+<line x1="96" y1="305.5" x2="346" y2="305.5" stroke="#c9dcc9" stroke-width="1"/>
+<text x="88" y="309.5" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" fill="#55645b" text-anchor="end" font-weight="normal">5,000</text>
+<line x1="96" y1="243.0" x2="346" y2="243.0" stroke="#c9dcc9" stroke-width="1"/>
+<text x="88" y="247.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" fill="#55645b" text-anchor="end" font-weight="normal">10,000</text>
+<line x1="96" y1="180.5" x2="346" y2="180.5" stroke="#c9dcc9" stroke-width="1"/>
+<text x="88" y="184.5" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" fill="#55645b" text-anchor="end" font-weight="normal">15,000</text>
+<line x1="96" y1="118.0" x2="346" y2="118.0" stroke="#c9dcc9" stroke-width="1"/>
+<text x="88" y="122.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" fill="#55645b" text-anchor="end" font-weight="normal">20,000</text>
+<text x="110.0" y="388" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" fill="#55645b" text-anchor="middle" font-weight="normal">1</text>
+<text x="221.0" y="388" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" fill="#55645b" text-anchor="middle" font-weight="normal">8</text>
+<text x="332.0" y="388" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" fill="#55645b" text-anchor="middle" font-weight="normal">32</text>
+<text x="221.0" y="408" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" fill="#55645b" text-anchor="middle" font-weight="normal">workers</text>
+<text x="221.0" y="106" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="14" fill="#1f2a24" text-anchor="middle" font-weight="bold">2 accounts: one hot pair</text>
+<polyline points="110.0,333.3 221.0,322.0 332.0,337.5" fill="none" stroke="#2a78d6" stroke-width="2" stroke-linejoin="round"/>
+<circle cx="110.0" cy="333.3" r="4" fill="#2a78d6" stroke="#f6f8ee" stroke-width="2"/>
+<circle cx="221.0" cy="322.0" r="4" fill="#2a78d6" stroke="#f6f8ee" stroke-width="2"/>
+<circle cx="332.0" cy="337.5" r="4" fill="#2a78d6" stroke="#f6f8ee" stroke-width="2"/>
+<polyline points="110.0,338.3 221.0,339.2 332.0,341.2" fill="none" stroke="#eb6834" stroke-width="2" stroke-linejoin="round"/>
+<circle cx="110.0" cy="338.3" r="4" fill="#eb6834" stroke="#f6f8ee" stroke-width="2"/>
+<circle cx="221.0" cy="339.2" r="4" fill="#eb6834" stroke="#f6f8ee" stroke-width="2"/>
+<circle cx="332.0" cy="341.2" r="4" fill="#eb6834" stroke="#f6f8ee" stroke-width="2"/>
+<polyline points="110.0,332.5 221.0,335.0 332.0,336.8" fill="none" stroke="#1baf7a" stroke-width="2" stroke-linejoin="round"/>
+<circle cx="110.0" cy="332.5" r="4" fill="#1baf7a" stroke="#f6f8ee" stroke-width="2"/>
+<circle cx="221.0" cy="335.0" r="4" fill="#1baf7a" stroke="#f6f8ee" stroke-width="2"/>
+<circle cx="332.0" cy="336.8" r="4" fill="#1baf7a" stroke="#f6f8ee" stroke-width="2"/>
+<text x="332.0" y="325.5375" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" fill="#1f2a24" text-anchor="end" font-weight="bold">2,437</text>
+<line x1="380" y1="368.0" x2="630" y2="368.0" stroke="#5f8f75" stroke-width="1"/>
+<line x1="380" y1="305.5" x2="630" y2="305.5" stroke="#c9dcc9" stroke-width="1"/>
+<line x1="380" y1="243.0" x2="630" y2="243.0" stroke="#c9dcc9" stroke-width="1"/>
+<line x1="380" y1="180.5" x2="630" y2="180.5" stroke="#c9dcc9" stroke-width="1"/>
+<line x1="380" y1="118.0" x2="630" y2="118.0" stroke="#c9dcc9" stroke-width="1"/>
+<text x="394.0" y="388" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" fill="#55645b" text-anchor="middle" font-weight="normal">1</text>
+<text x="505.0" y="388" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" fill="#55645b" text-anchor="middle" font-weight="normal">8</text>
+<text x="616.0" y="388" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" fill="#55645b" text-anchor="middle" font-weight="normal">32</text>
+<text x="505.0" y="408" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" fill="#55645b" text-anchor="middle" font-weight="normal">workers</text>
+<text x="505.0" y="106" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="14" fill="#1f2a24" text-anchor="middle" font-weight="bold">32 accounts</text>
+<polyline points="394.0,331.3 505.0,243.1 616.0,214.2" fill="none" stroke="#2a78d6" stroke-width="2" stroke-linejoin="round"/>
+<circle cx="394.0" cy="331.3" r="4" fill="#2a78d6" stroke="#f6f8ee" stroke-width="2"/>
+<circle cx="505.0" cy="243.1" r="4" fill="#2a78d6" stroke="#f6f8ee" stroke-width="2"/>
+<circle cx="616.0" cy="214.2" r="4" fill="#2a78d6" stroke="#f6f8ee" stroke-width="2"/>
+<polyline points="394.0,339.9 505.0,285.0 616.0,275.9" fill="none" stroke="#eb6834" stroke-width="2" stroke-linejoin="round"/>
+<circle cx="394.0" cy="339.9" r="4" fill="#eb6834" stroke="#f6f8ee" stroke-width="2"/>
+<circle cx="505.0" cy="285.0" r="4" fill="#eb6834" stroke="#f6f8ee" stroke-width="2"/>
+<circle cx="616.0" cy="275.9" r="4" fill="#eb6834" stroke="#f6f8ee" stroke-width="2"/>
+<polyline points="394.0,333.6 505.0,279.6 616.0,266.2" fill="none" stroke="#1baf7a" stroke-width="2" stroke-linejoin="round"/>
+<circle cx="394.0" cy="333.6" r="4" fill="#1baf7a" stroke="#f6f8ee" stroke-width="2"/>
+<circle cx="505.0" cy="279.6" r="4" fill="#1baf7a" stroke="#f6f8ee" stroke-width="2"/>
+<circle cx="616.0" cy="266.2" r="4" fill="#1baf7a" stroke="#f6f8ee" stroke-width="2"/>
+<text x="616.0" y="202.225" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" fill="#1f2a24" text-anchor="end" font-weight="bold">12,302</text>
+<line x1="664" y1="368.0" x2="914" y2="368.0" stroke="#5f8f75" stroke-width="1"/>
+<line x1="664" y1="305.5" x2="914" y2="305.5" stroke="#c9dcc9" stroke-width="1"/>
+<line x1="664" y1="243.0" x2="914" y2="243.0" stroke="#c9dcc9" stroke-width="1"/>
+<line x1="664" y1="180.5" x2="914" y2="180.5" stroke="#c9dcc9" stroke-width="1"/>
+<line x1="664" y1="118.0" x2="914" y2="118.0" stroke="#c9dcc9" stroke-width="1"/>
+<text x="678.0" y="388" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" fill="#55645b" text-anchor="middle" font-weight="normal">1</text>
+<text x="789.0" y="388" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" fill="#55645b" text-anchor="middle" font-weight="normal">8</text>
+<text x="900.0" y="388" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" fill="#55645b" text-anchor="middle" font-weight="normal">32</text>
+<text x="789.0" y="408" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" fill="#55645b" text-anchor="middle" font-weight="normal">workers</text>
+<text x="789.0" y="106" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="14" fill="#1f2a24" text-anchor="middle" font-weight="bold">1024 accounts</text>
+<polyline points="678.0,332.6 789.0,252.1 900.0,161.9" fill="none" stroke="#2a78d6" stroke-width="2" stroke-linejoin="round"/>
+<circle cx="678.0" cy="332.6" r="4" fill="#2a78d6" stroke="#f6f8ee" stroke-width="2"/>
+<circle cx="789.0" cy="252.1" r="4" fill="#2a78d6" stroke="#f6f8ee" stroke-width="2"/>
+<circle cx="900.0" cy="161.9" r="4" fill="#2a78d6" stroke="#f6f8ee" stroke-width="2"/>
+<polyline points="678.0,336.6 789.0,224.7 900.0,231.2" fill="none" stroke="#eb6834" stroke-width="2" stroke-linejoin="round"/>
+<circle cx="678.0" cy="336.6" r="4" fill="#eb6834" stroke="#f6f8ee" stroke-width="2"/>
+<circle cx="789.0" cy="224.7" r="4" fill="#eb6834" stroke="#f6f8ee" stroke-width="2"/>
+<circle cx="900.0" cy="231.2" r="4" fill="#eb6834" stroke="#f6f8ee" stroke-width="2"/>
+<polyline points="678.0,336.2 789.0,248.0 900.0,258.8" fill="none" stroke="#1baf7a" stroke-width="2" stroke-linejoin="round"/>
+<circle cx="678.0" cy="336.2" r="4" fill="#1baf7a" stroke="#f6f8ee" stroke-width="2"/>
+<circle cx="789.0" cy="248.0" r="4" fill="#1baf7a" stroke="#f6f8ee" stroke-width="2"/>
+<circle cx="900.0" cy="258.8" r="4" fill="#1baf7a" stroke="#f6f8ee" stroke-width="2"/>
+<text x="900.0" y="149.9375" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" fill="#1f2a24" text-anchor="end" font-weight="bold">16,485</text>
+</svg>
