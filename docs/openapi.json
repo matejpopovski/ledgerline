@@ -1,0 +1,539 @@
+{
+  "openapi" : "3.1.0",
+  "info" : {
+    "title" : "ledgerline",
+    "description" : "Double-entry ledger. All amounts are integer minor units of the entry currency.",
+    "version" : "0.1.0"
+  },
+  "servers" : [ ],
+  "paths" : {
+    "/v1/entries" : {
+      "post" : {
+        "tags" : [ "Journal" ],
+        "summary" : "Post a balanced journal entry; 200 instead of 201 means a replay",
+        "operationId" : "post",
+        "parameters" : [ {
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "description" : "Client-chosen key. Retrying with the same key and body returns the original entry.",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PostEntryRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PostedEntry"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/entries/{id}/reversal" : {
+      "post" : {
+        "tags" : [ "Journal" ],
+        "summary" : "Post the mirror image of an entry; an entry can be reversed once",
+        "operationId" : "reverse",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "description" : "Client-chosen key. Retrying with the same key and body returns the original entry.",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PostedEntry"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/accounts" : {
+      "post" : {
+        "tags" : [ "Accounts" ],
+        "summary" : "Open an account with a zero balance",
+        "operationId" : "open",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/OpenAccountRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Created",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AccountView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/entries/{id}" : {
+      "get" : {
+        "tags" : [ "Journal" ],
+        "summary" : "Read a posted entry",
+        "operationId" : "get",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PostedEntry"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/audit" : {
+      "get" : {
+        "tags" : [ "Audit" ],
+        "summary" : "Recompute balances from the journal and report any disagreement",
+        "operationId" : "audit",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AuditReport"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/accounts/{id}" : {
+      "get" : {
+        "tags" : [ "Accounts" ],
+        "summary" : "Read an account and its current balance",
+        "operationId" : "get_1",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AccountView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/accounts/{id}/statement" : {
+      "get" : {
+        "tags" : [ "Accounts" ],
+        "summary" : "Page through an account's postings, newest first",
+        "operationId" : "statement",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "before",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "limit",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 50,
+            "maximum" : 200,
+            "minimum" : 1
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StatementView"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "LegRequest" : {
+        "type" : "object",
+        "properties" : {
+          "accountId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "direction" : {
+            "type" : "string",
+            "enum" : [ "DEBIT", "CREDIT" ]
+          },
+          "amountMinor" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Integer minor units: 1050 is 10.50 USD and 1050 JPY.",
+            "maximum" : 9007199254740991,
+            "minimum" : 1
+          }
+        },
+        "required" : [ "accountId", "amountMinor", "direction" ]
+      },
+      "PostEntryRequest" : {
+        "type" : "object",
+        "properties" : {
+          "currency" : {
+            "type" : "string",
+            "example" : "USD"
+          },
+          "description" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "postings" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/LegRequest"
+            },
+            "minItems" : 1
+          }
+        },
+        "required" : [ "currency", "description", "postings" ]
+      },
+      "PostedEntry" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "sequence" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "currency" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "reversesEntryId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "postedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "postings" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Posting"
+            }
+          },
+          "replayed" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "Posting" : {
+        "type" : "object",
+        "properties" : {
+          "accountId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "direction" : {
+            "type" : "string",
+            "enum" : [ "DEBIT", "CREDIT" ]
+          },
+          "amountMinor" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "balanceAfterMinor" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "OpenAccountRequest" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string",
+            "minLength" : 1,
+            "pattern" : "[a-z0-9][a-z0-9:._-]{0,127}"
+          },
+          "name" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "currency" : {
+            "type" : "string",
+            "example" : "USD"
+          },
+          "normalSide" : {
+            "type" : "string",
+            "description" : "The side that increases this account's balance.",
+            "enum" : [ "DEBIT", "CREDIT" ]
+          },
+          "overdraftAllowed" : {
+            "type" : "boolean",
+            "description" : "Must be stated: nothing about money defaults silently."
+          }
+        },
+        "required" : [ "code", "currency", "name", "normalSide", "overdraftAllowed" ]
+      },
+      "AccountView" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "code" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "currency" : {
+            "type" : "string"
+          },
+          "normalSide" : {
+            "type" : "string",
+            "enum" : [ "DEBIT", "CREDIT" ]
+          },
+          "overdraftAllowed" : {
+            "type" : "boolean"
+          },
+          "balanceMinor" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "balanceDisplay" : {
+            "type" : "string",
+            "description" : "Balance rendered with the currency's exponent, for people."
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "AccountDrift" : {
+        "type" : "object",
+        "properties" : {
+          "accountId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "code" : {
+            "type" : "string"
+          },
+          "storedMinor" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "journalMinor" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "AuditReport" : {
+        "type" : "object",
+        "properties" : {
+          "takenAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "entries" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "postings" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "trialBalance" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/CurrencyTotal"
+            }
+          },
+          "unbalancedEntries" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "driftedAccounts" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/AccountDrift"
+            }
+          },
+          "runningBalanceBreaks" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "overdrawnAccounts" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "outboxPending" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "oldestPendingSeconds" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "clean" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "CurrencyTotal" : {
+        "type" : "object",
+        "properties" : {
+          "currency" : {
+            "type" : "string"
+          },
+          "debitsMinor" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "creditsMinor" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "StatementLine" : {
+        "type" : "object",
+        "properties" : {
+          "cursor" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "entryId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "postedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "direction" : {
+            "type" : "string",
+            "enum" : [ "DEBIT", "CREDIT" ]
+          },
+          "amountMinor" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "balanceAfterMinor" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "StatementView" : {
+        "type" : "object",
+        "properties" : {
+          "lines" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StatementLine"
+            }
+          },
+          "nextBefore" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      }
+    }
+  }
+}

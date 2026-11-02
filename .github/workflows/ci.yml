@@ -1,0 +1,28 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: gradle/actions/wrapper-validation@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "22"
+          cache: gradle
+      # env -u: setup-java puts the JDK on PATH, so a stale JAVA_HOME on a local replay
+      # of these steps cannot stop ./gradlew from finding it.
+      - name: Formatting
+        run: env -u JAVA_HOME ./gradlew spotlessCheck
+      - name: Compile with lint and Error Prone, then test on embedded Postgres
+        run: env -u JAVA_HOME ./gradlew test compileBenchJava

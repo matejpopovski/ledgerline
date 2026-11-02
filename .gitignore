@@ -1,0 +1,16 @@
+.gradle/
+build/
+bin/
+out/
+.idea/
+*.iml
+.vscode/
+.DS_Store
+__pycache__/
+*.class
+.env
+.env.*
+!.env.example
+.mutants/
+.kotlin/
+.jqwik-database

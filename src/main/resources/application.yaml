@@ -1,0 +1,46 @@
+spring:
+  application:
+    name: ledgerline
+  datasource:
+    url: ${LEDGER_DB_URL:jdbc:postgresql://localhost:5432/ledgerline}
+    username: ${LEDGER_DB_USER:ledgerline}
+    password: ${LEDGER_DB_PASSWORD:}
+    hikari:
+      maximum-pool-size: 16
+      # Bounds on what one request can pin: a queue behind a hot row should end in a
+      # retry and then a 503, never in a pile of connections waiting forever.
+      connection-init-sql: >-
+        SET lock_timeout = '2s';
+        SET statement_timeout = '10s';
+        SET idle_in_transaction_session_timeout = '15s'
+  jackson:
+    deserialization:
+      # Jackson would otherwise truncate 10.5 to 10 on a long field.
+      accept-float-as-int: false
+      fail-on-unknown-properties: true
+    mapper:
+      allow-coercion-of-scalars: false
+
+ledger:
+  strategy: ROW_LOCK
+  retry:
+    max-attempts: 12
+    base-delay: 2ms
+    max-delay: 100ms
+  outbox:
+    # Empty keeps the relay off; events stay queued in the table until one is configured.
+    webhook-url: ""
+    poll-interval: 1s
+    batch-size: 100
+    lease: 30s
+    request-timeout: 5s
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
